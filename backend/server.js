@@ -776,7 +776,7 @@ app.get('/api/stats/projects', authenticateToken, async (req, res) => {
             .from('tasks')
             .select('project_id, completed')
             .eq('user_id', userId)
-            .eq('deleted', false);
+            .eq('deleted', 0);
         
         if (tasksError) {
             return res.status(500).json({ error: tasksError.message });
@@ -785,7 +785,7 @@ app.get('/api/stats/projects', authenticateToken, async (req, res) => {
         const projectStats = projects.map(project => {
             const projectTasks = allTasks.filter(t => t.project_id === project.id);
             const total = projectTasks.length;
-            const completedCount = projectTasks.filter(t => t.completed === true).length;
+            const completedCount = projectTasks.filter(t => t.completed).length;
             
             return {
                 id: project.id,
