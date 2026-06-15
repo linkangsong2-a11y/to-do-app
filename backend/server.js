@@ -714,61 +714,62 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     
     try {
-        const { data: totalData, error: totalError } = await supabase
+        const { count: totalCount, error: totalError } = await supabase
             .from('tasks')
-            .select('id', { count: 'exact', head: true })
+            .select('*', { count: 'exact', head: true })
             .eq('user_id', userId)
-            .eq('deleted', 0);
+            .eq('deleted', false);
         
         if (totalError) throw totalError;
-        const total = totalData.count || 0;
+        const total = totalCount || 0;
         
-        const { data: completedData, error: completedError } = await supabase
+        const { count: completedCount, error: completedError } = await supabase
             .from('tasks')
-            .select('id', { count: 'exact', head: true })
+            .select('*', { count: 'exact', head: true })
             .eq('user_id', userId)
-            .eq('deleted', 0)
-            .eq('completed', 1);
+            .eq('deleted', false)
+            .eq('completed', true);
         
         if (completedError) throw completedError;
-        const completed = completedData.count || 0;
+        const completed = completedCount || 0;
         
-        const { data: activeData, error: activeError } = await supabase
+        const { count: activeCount, error: activeError } = await supabase
             .from('tasks')
-            .select('id', { count: 'exact', head: true })
+            .select('*', { count: 'exact', head: true })
             .eq('user_id', userId)
-            .eq('deleted', 0)
-            .eq('completed', 0);
+            .eq('deleted', false)
+            .eq('completed', false);
         
         if (activeError) throw activeError;
         
-        const { data: trashData, error: trashError } = await supabase
+        const { count: trashCount, error: trashError } = await supabase
             .from('tasks')
-            .select('id', { count: 'exact', head: true })
+            .select('*', { count: 'exact', head: true })
             .eq('user_id', userId)
-            .eq('deleted', 1);
+            .eq('deleted', true);
         
         if (trashError) throw trashError;
         
-        const { data: projectData, error: projectError } = await supabase
+        const { count: projectCount, error: projectError } = await supabase
             .from('projects')
-            .select('id', { count: 'exact', head: true })
+            .select('*', { count: 'exact', head: true })
             .eq('user_id', userId);
         
         if (projectError) throw projectError;
         
         const { data: priorityData, error: priorityError } = await supabase
             .from('tasks')
-            .select('priority, count', { count: 'exact' })
+            .select('priority')
             .eq('user_id', userId)
-            .eq('deleted', 0)
-            .groupBy('priority');
+            .eq('deleted', false);
         
         if (priorityError) throw priorityError;
         
-        const priorityStats = {};
+        const priorityStats = { high: 0, medium: 0, low: 0, none: 0 };
         priorityData.forEach(row => {
-            priorityStats[row.priority] = row.count;
+            if (row.priority in priorityStats) {
+                priorityStats[row.priority]++;
+            }
         });
         
         const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -776,16 +777,11 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
         res.json({
             total_tasks: total,
             completed_tasks: completed,
-            active_tasks: activeData.count || 0,
-            in_trash: trashData.count || 0,
-            projects: projectData.count || 0,
+            active_tasks: activeCount || 0,
+            in_trash: trashCount || 0,
+            projects: projectCount || 0,
             completion_rate: completionRate,
-            priority_distribution: {
-                high: priorityStats.high || 0,
-                medium: priorityStats.medium || 0,
-                low: priorityStats.low || 0,
-                none: priorityStats.none || 0
-            }
+            priority_distribution: priorityStats
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -796,30 +792,39 @@ app.get('/api/stats/projects', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     
     try {
-        const { data, error } = await supabase
+        const { data: projects, error: projectsError } = await supabase
             .from('projects')
-            .select(`
-                id,
-                name,
-                color,
-                (select count(*) from tasks where tasks.project_id = projects.id and tasks.user_id = projects.user_id and tasks.deleted = 0) as total_tasks,
-                (select count(*) from tasks where tasks.project_id = projects.id and tasks.user_id = projects.user_id and tasks.deleted = 0 and tasks.completed = 1) as completed_tasks
-            `)
+            .select('id, name, color, created_at')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
         
-        if (error) {
-            return res.status(500).json({ error: error.message });
+        if (projectsError) {
+            return res.status(500).json({ error: projectsError.message });
         }
         
-        const projectStats = data.map(project => ({
-            id: project.id,
-            name: project.name,
-            color: project.color,
-            total_tasks: project.total_tasks || 0,
-            completed_tasks: project.completed_tasks || 0,
-            active_tasks: (project.total_tasks || 0) - (project.completed_tasks || 0),
-            completion_rate: project.total_tasks > 0 ? Math.round((project.completed_tasks / project.total_tasks) * 100) : 0
+        const { data: allTasks, error: tasksError } = await supabase
+            .from('tasks')
+            .select('project_id, completed')
+            .eq('user_id', userId)
+            .eq('deleted', false);
+        
+        if (tasksError) {
+            return res.status(500).json({ error: tasksError.message });
+        }
+        
+        const projectStats = projects.map(project => {
+            const projectTasks = allTasks.filter(t => t.project_id === project.id);
+            const total = projectTasks.length;
+            const completedCount = projectTasks.filter(t => t.completed === true).length;
+            
+            return {
+                id: project.id,
+                name: project.name,
+                color: project.color,
+                total_tasks: total,
+                completed_tasks: completedCount,
+                active_tasks: total - completedCount,
+                completion_rate: total > 0 ? Math.round((completedCount / total) * 100) : 0
         }));
         
         res.json(projectStats);
