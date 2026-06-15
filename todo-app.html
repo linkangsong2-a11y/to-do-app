@@ -28,6 +28,7 @@
             --radius: 16px;
             --radius-sm: 10px;
             --radius-xs: 6px;
+            --auth-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         * {
@@ -1036,10 +1037,219 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* 登录页面 */
+        #auth-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--auth-bg);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 48px;
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .auth-header svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+        }
+        .auth-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .auth-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 24px;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-xs);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .auth-tab.active {
+            background: white;
+            color: var(--text);
+            box-shadow: var(--shadow-sm);
+        }
+        .auth-form {
+            display: none;
+        }
+        .auth-form.active {
+            display: block;
+        }
+        .auth-form .form-group {
+            margin-bottom: 16px;
+        }
+        .auth-form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            background: white;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .auth-form input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+        }
+        .auth-form .error {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 8px;
+            min-height: 18px;
+        }
+        .auth-form .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .auth-form .btn:hover {
+            background: var(--accent-hover);
+        }
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .auth-divider::before, .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .auth-divider span {
+            padding: 0 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .auth-footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .auth-footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <nav class="nav">
+    <div id="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="100" rx="20" fill="#1d1d1f"/>
+                    <path d="M30 52L44 66L70 34" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>TaskFlow</h1>
+                <p>智能任务管理，让工作更高效</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="authTabLogin">登录</button>
+                <button class="auth-tab" id="authTabRegister">注册</button>
+            </div>
+            
+            <div class="auth-form active" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">邮箱</label>
+                    <input type="email" id="loginEmail" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">密码</label>
+                    <input type="password" id="loginPassword" placeholder="请输入密码">
+                    <div class="error" id="loginError"></div>
+                </div>
+                <button class="btn" id="loginBtn">登录</button>
+                <div class="auth-divider"><span>或</span></div>
+                <div class="auth-footer">
+                    还没有账号？<a href="#" id="toRegister">立即注册</a>
+                </div>
+            </div>
+            
+            <div class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <label for="registerEmail">邮箱</label>
+                    <input type="email" id="registerEmail" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">密码</label>
+                    <input type="password" id="registerPassword" placeholder="请输入密码（至少6位）">
+                </div>
+                <div class="form-group">
+                    <label for="registerConfirm">确认密码</label>
+                    <input type="password" id="registerConfirm" placeholder="请再次输入密码">
+                    <div class="error" id="registerError"></div>
+                </div>
+                <button class="btn" id="registerBtn">注册</button>
+                <div class="auth-divider"><span>或</span></div>
+                <div class="auth-footer">
+                    已有账号？<a href="#" id="toLogin">立即登录</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="app-container">
+        <nav class="nav">
         <div class="nav-inner">
             <div class="nav-brand">
                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1330,7 +1540,6 @@
     </div>
 
     <script>
-    // 动态获取API地址，支持本地开发和生产部署
     const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:3001/api'
         : window.location.origin + '/api';
@@ -1347,6 +1556,140 @@
     let timelineDays = 14;
     let dayWidth = 100;
     let collapsedProjects = {};
+    let currentUser = null;
+
+    function getToken() {
+        return localStorage.getItem('taskflow_token');
+    }
+
+    function setToken(token) {
+        localStorage.setItem('taskflow_token', token);
+    }
+
+    function clearToken() {
+        localStorage.removeItem('taskflow_token');
+        currentUser = null;
+    }
+
+    async function fetchWithAuth(url, options = {}) {
+        const token = getToken();
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        const response = await fetch(url, { ...options, headers });
+        if (response.status === 401) {
+            clearToken();
+            showAuthPage();
+            throw new Error('Unauthorized');
+        }
+        return response;
+    }
+
+    async function login(email, password) {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            setToken(data.token);
+            currentUser = data.user;
+            return true;
+        }
+        throw new Error(data.error || '登录失败');
+    }
+
+    async function register(email, password) {
+        const response = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            return true;
+        }
+        throw new Error(data.error || '注册失败');
+    }
+
+    async function checkAuth() {
+        const token = getToken();
+        if (!token) {
+            showAuthPage();
+            return false;
+        }
+        try {
+            const response = await fetchWithAuth(`${API_BASE}/auth/user`);
+            if (response.ok) {
+                const data = await response.json();
+                currentUser = data;
+                return true;
+            }
+        } catch {
+            showAuthPage();
+            return false;
+        }
+        showAuthPage();
+        return false;
+    }
+
+    function showAuthPage() {
+        document.getElementById('app-container').style.display = 'none';
+        document.getElementById('auth-container').style.display = 'flex';
+    }
+
+    function showApp() {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const errorEl = document.getElementById('loginError');
+        try {
+            errorEl.textContent = '';
+            await login(email, password);
+            showApp();
+            await loadData();
+            showView('dashboard');
+            showToast('登录成功');
+        } catch (err) {
+            errorEl.textContent = err.message;
+        }
+    }
+
+    async function handleRegister() {
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const confirm = document.getElementById('registerConfirm').value;
+        const errorEl = document.getElementById('registerError');
+        try {
+            errorEl.textContent = '';
+            if (password !== confirm) {
+                throw new Error('两次输入的密码不一致');
+            }
+            if (password.length < 6) {
+                throw new Error('密码长度至少需要6位');
+            }
+            await register(email, password);
+            showToast('注册成功，请登录');
+            document.getElementById('authTabLogin').click();
+        } catch (err) {
+            errorEl.textContent = err.message;
+        }
+    }
+
+    async function handleLogout() {
+        clearToken();
+        showAuthPage();
+        showToast('已退出登录');
+    }
 
     const COLORS = ['#0071e3', '#ff9500', '#ff3b30', '#34c759', '#af52de', '#5856d6'];
 
@@ -1399,8 +1742,8 @@
     async function loadData() {
         try {
             const [tasksRes, projectsRes] = await Promise.all([
-                fetch(API_BASE + '/tasks'),
-                fetch(API_BASE + '/projects')
+                fetchWithAuth(API_BASE + '/tasks'),
+                fetchWithAuth(API_BASE + '/projects')
             ]);
             tasks = (await tasksRes.json()).map(t => ({ ...t, completed: t.completed === 1 }));
             projects = await projectsRes.json();
@@ -1729,8 +2072,8 @@
         try {
             const method = editingProjectId ? 'PUT' : 'POST';
             const url = editingProjectId ? `${API_BASE}/projects/${editingProjectId}` : `${API_BASE}/projects`;
-            await fetch(url, {
-                method, headers: { 'Content-Type': 'application/json' },
+            await fetchWithAuth(url, {
+                method,
                 body: JSON.stringify({ name, description, color })
             });
             document.getElementById('projectModal').style.display = 'none';
@@ -1777,8 +2120,8 @@
         try {
             const method = taskId ? 'PUT' : 'POST';
             const url = taskId ? `${API_BASE}/tasks/${taskId}` : `${API_BASE}/tasks`;
-            await fetch(url, {
-                method, headers: { 'Content-Type': 'application/json' },
+            await fetchWithAuth(url, {
+                method,
                 body: JSON.stringify({
                     title, description,
                     category: document.getElementById('taskCategory').value,
@@ -1812,8 +2155,8 @@
             const id = target.closest('[data-toggle-task]').dataset.toggleTask;
             const task = tasks.find(t => t.id === id);
             if (task) {
-                await fetch(`${API_BASE}/tasks/${id}/complete`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                await fetchWithAuth(`${API_BASE}/tasks/${id}/complete`, {
+                    method: 'PUT',
                     body: JSON.stringify({ completed: !task.completed })
                 });
                 await loadData();
@@ -1855,7 +2198,7 @@
             if (project) {
                 showConfirm('删除项目', `确定要删除项目「${project.name}」吗？项目中的任务将移至默认项目。`, async (ok) => {
                     if (ok) {
-                        await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
+                        await fetchWithAuth(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
                         await loadData();
                         renderDashboard();
                         renderProjects();
@@ -1868,7 +2211,7 @@
             const id = target.closest('[data-delete-task]').dataset.deleteTask;
             showConfirm('删除任务', '确定要删除这个任务吗？', async (ok) => {
                 if (ok) {
-                    await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' });
+                    await fetchWithAuth(`${API_BASE}/tasks/${id}`, { method: 'DELETE' });
                     await loadData();
                     renderDashboard();
                     renderProjects();
@@ -1943,7 +2286,7 @@
         if (completed.length === 0) { showToast('没有已完成的任务'); return; }
         showConfirm('清空已完成', `确定要将 ${completed.length} 个已完成任务移到回收站吗？`, async (ok) => {
             if (ok) {
-                for (const t of completed) await fetch(`${API_BASE}/tasks/${t.id}`, { method: 'DELETE' });
+                for (const t of completed) await fetchWithAuth(`${API_BASE}/tasks/${t.id}`, { method: 'DELETE' });
                 await loadData();
                 renderDashboard();
                 renderProjects();
@@ -1985,10 +2328,42 @@
         });
     });
 
+    document.getElementById('authTabLogin').addEventListener('click', () => {
+        document.getElementById('loginForm').classList.add('active');
+        document.getElementById('registerForm').classList.remove('active');
+        document.getElementById('authTabLogin').classList.add('active');
+        document.getElementById('authTabRegister').classList.remove('active');
+    });
+
+    document.getElementById('authTabRegister').addEventListener('click', () => {
+        document.getElementById('registerForm').classList.add('active');
+        document.getElementById('loginForm').classList.remove('active');
+        document.getElementById('authTabRegister').classList.add('active');
+        document.getElementById('authTabLogin').classList.remove('active');
+    });
+
+    document.getElementById('toRegister').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('authTabRegister').click();
+    });
+
+    document.getElementById('toLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('authTabLogin').click();
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', handleLogin);
+    document.getElementById('registerBtn').addEventListener('click', handleRegister);
+
     (async function init() {
-        await loadData();
-        showView('dashboard');
+        const isAuthenticated = await checkAuth();
+        if (isAuthenticated) {
+            showApp();
+            await loadData();
+            showView('dashboard');
+        }
     })();
     </script>
+</div>
 </body>
 </html>
