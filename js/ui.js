@@ -49,7 +49,10 @@ function showConfirm(title, message, onConfirm, confirmText = '确认') {
 
 function showModal(id) {
     const m = document.getElementById(id);
-    if (m) m.style.display = 'flex';
+    if (m) {
+        m.classList.remove('hidden');
+        m.style.display = 'flex';
+    }
 }
 
 function hideModal(id) {
