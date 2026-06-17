@@ -218,4 +218,9 @@ function initApp() {
     document.head.appendChild(style);
 })();
 
-document.addEventListener('DOMContentLoaded', initApp);
+// Init app immediately since scripts are loaded at end of body
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
