@@ -57,7 +57,10 @@ function showModal(id) {
 
 function hideModal(id) {
     const m = document.getElementById(id);
-    if (m) m.style.display = 'none';
+    if (m) {
+        m.classList.add('hidden');
+        m.style.display = 'none';
+    }
 }
 
 function showView(view) {

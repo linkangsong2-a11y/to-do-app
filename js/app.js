@@ -96,6 +96,14 @@ function initApp() {
 
         // Global click delegation (task completion, delete, edit, etc.)
         document.addEventListener('click', async (e) => {
+            // Close modal buttons
+            const closeModal = e.target.closest('[data-close-modal]');
+            if (closeModal) {
+                e.stopPropagation();
+                hideModal(closeModal.dataset.closeModal);
+                return;
+            }
+
             const taskToggle = e.target.closest('[data-toggle-task]');
             if (taskToggle) {
                 e.stopPropagation();
