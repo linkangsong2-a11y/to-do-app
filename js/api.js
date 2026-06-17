@@ -24,7 +24,8 @@ async function apiCall(endpoint, method = 'GET', data = null, options = {}) {
 const AuthAPI = {
     login: (email, password) => apiCall('/auth/login', 'POST', { email, password }),
     register: (email, password) => apiCall('/auth/register', 'POST', { email, password }),
-    logout: () => apiCall('/auth/logout', 'POST')
+    logout: () => apiCall('/auth/logout', 'POST'),
+    getUser: () => apiCall('/auth/user')
 };
 
 // Projects

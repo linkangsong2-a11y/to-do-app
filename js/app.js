@@ -174,12 +174,23 @@ function initApp() {
     // Auto init: if logged in, load data
     if (checkAuth()) {
         showApp();
-        const email = localStorage.getItem('taskflow_email') || '';
-        if (email) {
-            const userEl = document.getElementById('userEmail');
-            if (userEl) userEl.textContent = email;
-        }
         (async () => {
+            let email = localStorage.getItem('taskflow_email');
+            if (!email) {
+                try {
+                    const userData = await AuthAPI.getUser();
+                    if (userData.email) {
+                        email = userData.email;
+                        localStorage.setItem('taskflow_email', email);
+                    }
+                } catch (e) {
+                    console.warn('Failed to fetch user email', e);
+                }
+            }
+            if (email) {
+                const userEl = document.getElementById('userEmail');
+                if (userEl) userEl.textContent = email;
+            }
             await loadData();
             renderDashboard();
         })();

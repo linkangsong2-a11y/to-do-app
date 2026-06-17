@@ -61,8 +61,12 @@ function showView(view) {
     AppState.currentView = view;
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    const target = document.querySelector(`[data-view="${view}"]`);
-    if (target) target.classList.add('active');
+    
+    const viewEl = document.getElementById(`view-${view}`);
+    if (viewEl) viewEl.classList.add('active');
+    
+    const tabEl = document.querySelector(`[data-view="${view}"]`);
+    if (tabEl) tabEl.classList.add('active');
 
     if (view === 'dashboard') renderDashboard();
     else if (view === 'projects') renderProjects();
