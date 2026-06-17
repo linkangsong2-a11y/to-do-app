@@ -79,7 +79,7 @@
                     <h2 class="page-title">仪表盘</h2>
                     <p class="page-subtitle">掌握整体项目与任务进展</p>
                 </div>
-                <button class="btn btn-primary" id="dashAddTaskBtn">+ 新建任务</button>
+                <button class="btn btn-primary" id="dashAddTaskBtn" onclick="openCreateTaskModal()">+ 新建任务</button>
             </div>
 
             <div class="stats" id="statsCards"></div>
@@ -118,7 +118,7 @@
                     <h2 class="page-title">项目</h2>
                     <p class="page-subtitle">管理你的所有项目</p>
                 </div>
-                <button class="btn btn-primary" id="addProjectBtn">+ 新建项目</button>
+                <button class="btn btn-primary" id="addProjectBtn" onclick="openCreateProjectModal()">+ 新建项目</button>
             </div>
             <div class="projects-grid" id="projectsGrid"></div>
         </section>
@@ -130,7 +130,7 @@
                     <h2 class="page-title">任务</h2>
                     <p class="page-subtitle">管理与追踪所有任务</p>
                 </div>
-                <button class="btn btn-primary" id="addTaskBtn">+ 新建任务</button>
+                <button class="btn btn-primary" id="addTaskBtn" onclick="openCreateTaskModal()">+ 新建任务</button>
             </div>
 
             <div class="toolbar">
@@ -180,7 +180,7 @@
                     <p class="page-subtitle">按日期查看任务分布</p>
                 </div>
                 <div class="flex" style="gap:8px;">
-                    <button class="btn btn-primary" id="timelineAddBtn">+ 新建任务</button>
+                    <button class="btn btn-primary" id="timelineAddBtn" onclick="openCreateTaskModal()">+ 新建任务</button>
                 </div>
             </div>
 
