@@ -157,16 +157,13 @@ function initApp() {
                 return;
             }
 
-            const collapseToggle = e.target.closest('[data-project-id] > .timeline-row-header, .timeline-row-header');
-            if (collapseToggle) {
-                const row = collapseToggle.closest('[data-project-id]');
-                if (row) {
-                    e.stopPropagation();
-                    const id = row.dataset.projectId;
-                    AppState.collapsedProjects[id] = !AppState.collapsedProjects[id];
-                    renderTimeline();
-                    return;
-                }
+            const timelineProjectHeader = e.target.closest('[data-toggle-project]');
+            if (timelineProjectHeader) {
+                e.stopPropagation();
+                const id = timelineProjectHeader.dataset.toggleProject;
+                AppState.collapsedProjects[id] = !AppState.collapsedProjects[id];
+                renderTimeline();
+                return;
             }
 
             const restoreBtn = e.target.closest('[data-restore-task]');

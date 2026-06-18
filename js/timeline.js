@@ -5,7 +5,7 @@ function renderTimeline() {
     const startDate = new Date(AppState.timelineStartDate);
     startDate.setHours(0, 0, 0, 0);
 
-    // Build date header columns
+    // Build date columns
     const dateCols = [];
     for (let i = 0; i < days; i++) {
         const d = new Date(startDate);
@@ -15,24 +15,23 @@ function renderTimeline() {
         const isToday = d.getTime() === today.getTime();
         dateCols.push({
             date: d,
+            dateStr: d.toISOString().split('T')[0],
             label: d.getDate(),
             weekday: ['日', '一', '二', '三', '四', '五', '六'][d.getDay()],
             isToday
         });
     }
 
+    // Header: Project column + Date columns
     const headerHtml = `
-        <div style="display:flex;background:var(--bg-subtle);border-bottom:1px solid var(--border);">
-            <div style="width:240px;min-width:240px;padding:14px 20px;border-right:1px solid var(--border);font-weight:600;font-size:13px;">项目 / 任务</div>
-            <div style="display:flex;flex:1;">
-                <div style="width:240px;min-width:240px;padding:14px 20px;border-right:1px solid var(--border);font-weight:600;font-size:13px;">任务名称</div>
-                ${dateCols.map(col => `
-                    <div style="flex:1;min-width:80px;padding:10px 4px;text-align:center;border-right:1px solid var(--border);${col.isToday ? 'background:rgba(0,113,227,0.05);' : ''}">
-                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${col.weekday}</div>
-                        <div style="font-size:16px;font-weight:600;${col.isToday ? 'color:var(--accent);' : ''}">${col.label}</div>
-                    </div>
-                `).join('')}
-            </div>
+        <div style="display:flex;background:var(--bg-subtle);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;">
+            <div style="width:180px;min-width:180px;padding:12px 16px;border-right:1px solid var(--border);font-weight:600;font-size:13px;">项目</div>
+            ${dateCols.map(col => `
+                <div style="flex:1;min-width:80px;padding:8px 4px;text-align:center;border-right:1px solid var(--border);${col.isToday ? 'background:rgba(0,113,227,0.08);' : ''}">
+                    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">${col.weekday}</div>
+                    <div style="font-size:15px;font-weight:600;${col.isToday ? 'color:var(--accent);' : ''}">${col.label}</div>
+                </div>
+            `).join('')}
         </div>
     `;
 
@@ -47,7 +46,6 @@ function renderTimeline() {
         projectGroups[key].tasks.push(t);
     });
 
-    // Filter to projects with tasks
     const groups = Object.values(projectGroups).filter(g => g.tasks.length > 0);
 
     if (groups.length === 0) {
@@ -69,54 +67,48 @@ function renderTimeline() {
         const completedCount = g.tasks.filter(t => t.completed).length;
         const rate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
-        // Build task cells by date
+        // Build task cells - tasks shown under their due date
         const taskCells = dateCols.map(col => {
             const dayTasks = g.tasks.filter(t => {
                 if (!t.due_date_time) return false;
                 const dt = new Date(t.due_date_time);
-                return dt.getFullYear() === col.date.getFullYear() &&
-                    dt.getMonth() === col.date.getMonth() &&
-                    dt.getDate() === col.date.getDate();
+                const taskDate = dt.toISOString().split('T')[0];
+                return taskDate === col.dateStr;
             });
-            if (dayTasks.length === 0) return `<div style="flex:1;min-width:80px;padding:8px;border-right:1px solid var(--border);min-height:50px;"></div>`;
             return `
-                <div style="flex:1;min-width:80px;padding:8px;border-right:1px solid var(--border);min-height:50px;">
-                    ${dayTasks.map(t => `
-                        <div class="timeline-task ${t.completed ? 'done' : ''}" data-edit-task="${escapeHtml(t.id)}"
-                            style="padding:6px 10px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:500;margin-bottom:4px;cursor:pointer;transition:all 0.2s;${t.completed ? 'opacity:0.5;text-decoration:line-through;' : ''}${!t.completed && isOverdue(t.due_date_time) ? 'border-color:#ff3b30;color:#ff3b30;' : ''}">
-                            ${escapeHtml((t.title || '').slice(0, 20))}
-                        </div>
-                    `).join('')}
+                <div style="flex:1;min-width:80px;padding:8px 4px;border-right:1px solid var(--border);min-height:44px;${col.isToday ? 'background:rgba(0,113,227,0.03);' : ''}">
+                    ${dayTasks.map(t => {
+                        const overdue = !t.completed && isOverdue(t.due_date_time);
+                        return `
+                            <div class="timeline-task ${t.completed ? 'done' : ''}" data-edit-task="${escapeHtml(t.id)}"
+                                style="padding:5px 8px;background:${t.completed ? 'var(--bg-subtle)' : escapeHtml(g.project.color || '#0071e3')};color:${t.completed ? 'var(--text)' : 'white'};border-radius:6px;font-size:11px;font-weight:500;margin-bottom:4px;cursor:pointer;${t.completed ? 'opacity:0.6;text-decoration:line-through;' : ''}${overdue && !t.completed ? 'background:#ff3b30;' : ''}">
+                                ${escapeHtml((t.title || '').slice(0, 15))}
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
         }).join('');
 
         return `
-            <div>
-                <div class="timeline-row" data-project-id="${escapeHtml(g.project.id)}" ${collapsed ? 'class="collapsed"' : ''} style="display:flex;border-bottom:1px solid var(--border);">
-                    <div class="timeline-row-header" style="width:240px;min-width:240px;padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--bg-subtle);transition:background 0.2s;border-right:1px solid var(--border);">
-                        <span class="chevron" style="transition:transform 0.2s;color:var(--text-muted);transform:rotate(${collapsed ? '-90deg' : '0'}deg);">▼</span>
-                        <span class="timeline-project-dot" style="width:10px;height:10px;border-radius:50%;background:${escapeHtml(g.project.color || '#0071e3')};"></span>
-                        <span class="timeline-project-name" style="font-size:14px;font-weight:600;">${escapeHtml(g.project.name)}</span>
-                        <span style="font-size:12px;color:var(--text-muted);margin-left:auto;font-feature-settings:'tnum';">
-                            ${completedCount}/${total} · ${rate}%
-                        </span>
-                        <div class="timeline-progress-mini" style="width:100px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-left:8px;">
-                            <div style="width:${rate}%;height:100%;background:${escapeHtml(g.project.color || '#0071e3')};border-radius:2px;"></div>
-                        </div>
-                    </div>
-                    <div style="display:flex;flex:1;">
-                        <div style="width:240px;min-width:240px;padding:12px 20px;border-right:1px solid var(--border);background:white;">
-                            ${g.tasks.map(t => `
-                                <div class="timeline-task ${t.completed ? 'done' : ''}" data-edit-task="${escapeHtml(t.id)}"
-                                    style="padding:6px 10px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:500;margin-bottom:4px;cursor:pointer;transition:all 0.2s;${t.completed ? 'opacity:0.5;text-decoration:line-through;' : ''}">
-                                    ${escapeHtml((t.title || '').slice(0, 30))}
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div style="display:flex;flex:1;">${taskCells}</div>
+            <div class="timeline-project-row" data-project-id="${escapeHtml(g.project.id)}" style="border-bottom:1px solid var(--border);">
+                <div class="timeline-project-header ${collapsed ? '' : 'expanded'}" 
+                     data-toggle-project="${escapeHtml(g.project.id)}"
+                     style="display:flex;align-items:center;padding:10px 16px;cursor:pointer;background:var(--bg-subtle);transition:background 0.2s;gap:10px;">
+                    <span class="chevron" style="transition:transform 0.2s;color:var(--text-muted);transform:rotate(${collapsed ? '-90deg' : '0'}deg);font-size:10px;">▼</span>
+                    <span style="width:8px;height:8px;border-radius:50%;background:${escapeHtml(g.project.color || '#0071e3')};flex-shrink:0;"></span>
+                    <span style="font-size:13px;font-weight:600;">${escapeHtml(g.project.name)}</span>
+                    <span style="font-size:11px;color:var(--text-muted);margin-left:auto;">${completedCount}/${total}</span>
+                    <div style="width:60px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-left:8px;">
+                        <div style="width:${rate}%;height:100%;background:${escapeHtml(g.project.color || '#0071e3')};border-radius:2px;"></div>
                     </div>
                 </div>
+                ${!collapsed ? `
+                <div style="display:flex;">
+                    <div style="width:180px;min-width:180px;border-right:1px solid var(--border);"></div>
+                    <div style="display:flex;flex:1;">${taskCells}</div>
+                </div>
+                ` : ''}
             </div>
         `;
     }).join('');
