@@ -23,13 +23,16 @@ function renderTimeline() {
 
     const headerHtml = `
         <div style="display:flex;background:var(--bg-subtle);border-bottom:1px solid var(--border);">
-            <div style="width:240px;padding:14px 20px;border-right:1px solid var(--border);font-weight:600;font-size:13px;">项目 / 任务</div>
-            ${dateCols.map(col => `
-                <div style="flex:1;min-width:80px;padding:10px 4px;text-align:center;border-right:1px solid var(--border);${col.isToday ? 'background:rgba(0,113,227,0.05);' : ''}">
-                    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${col.weekday}</div>
-                    <div style="font-size:16px;font-weight:600;${col.isToday ? 'color:var(--accent);' : ''}">${col.label}</div>
-                </div>
-            `).join('')}
+            <div style="width:240px;min-width:240px;padding:14px 20px;border-right:1px solid var(--border);font-weight:600;font-size:13px;">项目 / 任务</div>
+            <div style="display:flex;flex:1;">
+                <div style="width:240px;min-width:240px;padding:14px 20px;border-right:1px solid var(--border);font-weight:600;font-size:13px;">任务名称</div>
+                ${dateCols.map(col => `
+                    <div style="flex:1;min-width:80px;padding:10px 4px;text-align:center;border-right:1px solid var(--border);${col.isToday ? 'background:rgba(0,113,227,0.05);' : ''}">
+                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${col.weekday}</div>
+                        <div style="font-size:16px;font-weight:600;${col.isToday ? 'color:var(--accent);' : ''}">${col.label}</div>
+                    </div>
+                `).join('')}
+            </div>
         </div>
     `;
 
@@ -90,8 +93,8 @@ function renderTimeline() {
 
         return `
             <div>
-                <div class="timeline-row" data-project-id="${escapeHtml(g.project.id)}" ${collapsed ? 'class="collapsed"' : ''} style="display:block;border-bottom:1px solid var(--border);">
-                    <div class="timeline-row-header" style="padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--bg-subtle);transition:background 0.2s;">
+                <div class="timeline-row" data-project-id="${escapeHtml(g.project.id)}" ${collapsed ? 'class="collapsed"' : ''} style="display:flex;border-bottom:1px solid var(--border);">
+                    <div class="timeline-row-header" style="width:240px;min-width:240px;padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--bg-subtle);transition:background 0.2s;border-right:1px solid var(--border);">
                         <span class="chevron" style="transition:transform 0.2s;color:var(--text-muted);transform:rotate(${collapsed ? '-90deg' : '0'}deg);">▼</span>
                         <span class="timeline-project-dot" style="width:10px;height:10px;border-radius:50%;background:${escapeHtml(g.project.color || '#0071e3')};"></span>
                         <span class="timeline-project-name" style="font-size:14px;font-weight:600;">${escapeHtml(g.project.name)}</span>
@@ -102,9 +105,8 @@ function renderTimeline() {
                             <div style="width:${rate}%;height:100%;background:${escapeHtml(g.project.color || '#0071e3')};border-radius:2px;"></div>
                         </div>
                     </div>
-                    ${!collapsed ? `
-                    <div style="display:flex;">
-                        <div style="width:240px;padding:12px 20px 12px 44px;border-right:1px solid var(--border);background:white;">
+                    <div style="display:flex;flex:1;">
+                        <div style="width:240px;min-width:240px;padding:12px 20px;border-right:1px solid var(--border);background:white;">
                             ${g.tasks.map(t => `
                                 <div class="timeline-task ${t.completed ? 'done' : ''}" data-edit-task="${escapeHtml(t.id)}"
                                     style="padding:6px 10px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:500;margin-bottom:4px;cursor:pointer;transition:all 0.2s;${t.completed ? 'opacity:0.5;text-decoration:line-through;' : ''}">
@@ -114,7 +116,6 @@ function renderTimeline() {
                         </div>
                         <div style="display:flex;flex:1;">${taskCells}</div>
                     </div>
-                    ` : ''}
                 </div>
             </div>
         `;
