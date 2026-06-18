@@ -166,6 +166,14 @@ function initApp() {
                 return;
             }
 
+            const timelineFilter = e.target.closest('[data-timeline-filter]');
+            if (timelineFilter) {
+                e.stopPropagation();
+                AppState.timelineProjectFilter = timelineFilter.dataset.timelineFilter;
+                renderTimeline();
+                return;
+            }
+
             const restoreBtn = e.target.closest('[data-restore-task]');
             if (restoreBtn) {
                 e.stopPropagation();

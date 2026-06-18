@@ -116,5 +116,6 @@ const AppState = {
     timelineMode: 'week',
     dayWidth: 100,
     editingTaskId: null,
-    editingProjectId: null
+    editingProjectId: null,
+    timelineProjectFilter: ''
 };
