@@ -96,19 +96,25 @@ function updateProjectSelect() {
         projects.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
 }
 
-function openCreateTaskModal() {
+function openCreateTaskModal(preDate) {
     document.getElementById('taskModalTitle').textContent = '新建任务';
     AppState.editingTaskId = null;
     document.getElementById('taskId').value = '';
     document.getElementById('taskTitle').value = '';
     document.getElementById('taskDescription').value = '';
     document.getElementById('taskProjectSelect').value = AppState.currentProjectFilter || '';
-    document.getElementById('taskCategory').value = 'other';
     document.getElementById('taskPriority').value = 'none';
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
-    document.getElementById('taskDueDate').value = tomorrow.toISOString().slice(0, 16);
+    document.getElementById('taskStatus').value = 'in_progress';
+    document.getElementById('taskAssignee').value = '';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = preDate ? new Date(preDate) : new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    end.setHours(0, 0, 0, 0);
+
+    document.getElementById('taskStartDate').value = tlFormatDate(end);
+    document.getElementById('taskEndDate').value = tlFormatDate(end);
+
     updateProjectSelect();
     showModal('taskModal');
 }
@@ -121,15 +127,14 @@ function openEditTaskModal(id) {
     document.getElementById('taskId').value = task.id;
     document.getElementById('taskTitle').value = task.title || '';
     document.getElementById('taskDescription').value = task.description || '';
-    document.getElementById('taskCategory').value = task.category || 'other';
     document.getElementById('taskPriority').value = task.priority || 'none';
-    if (task.due_date_time) {
-        const d = new Date(task.due_date_time);
-        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-        document.getElementById('taskDueDate').value = d.toISOString().slice(0, 16);
-    } else {
-        document.getElementById('taskDueDate').value = '';
-    }
+    document.getElementById('taskAssignee').value = task.assignee || '';
+
+    const { startDate, endDate } = tlGetTaskDates(task);
+    document.getElementById('taskStartDate').value = startDate ? tlFormatDate(startDate) : '';
+    document.getElementById('taskEndDate').value = endDate ? tlFormatDate(endDate) : '';
+    document.getElementById('taskStatus').value = tlGetTaskStatus(task);
+
     updateProjectSelect();
     document.getElementById('taskProjectSelect').value = task.project_id || '';
     showModal('taskModal');
@@ -137,21 +142,28 @@ function openEditTaskModal(id) {
 
 async function saveTask() {
     const title = document.getElementById('taskTitle').value.trim();
-    const dueDate = document.getElementById('taskDueDate').value;
+    const endDate = document.getElementById('taskEndDate').value;
     const btn = document.getElementById('saveTaskBtn');
 
-    if (!title) { showToast('请输入任务标题', 'error'); return; }
-    if (!dueDate) { showToast('请选择截止时间', 'error'); return; }
+    if (!title) { showToast('请输入任务名称', 'error'); return; }
+    if (!endDate) { showToast('请选择结束日期', 'error'); return; }
 
     setButtonLoading(btn, '保存中...');
 
+    const startDate = document.getElementById('taskStartDate').value || endDate;
     const description = document.getElementById('taskDescription').value.trim();
+    const status = document.getElementById('taskStatus').value;
+
     const payload = {
         title,
         description,
-        category: document.getElementById('taskCategory').value,
         priority: document.getElementById('taskPriority').value,
-        due_date_time: new Date(dueDate).toISOString(),
+        assignee: document.getElementById('taskAssignee').value.trim(),
+        start_date: new Date(startDate).toISOString(),
+        end_date: new Date(endDate).toISOString(),
+        due_date_time: new Date(endDate).toISOString(),
+        status: status,
+        completed: status === 'completed',
         project_id: document.getElementById('taskProjectSelect').value || null
     };
 
@@ -168,6 +180,7 @@ async function saveTask() {
         renderDashboard();
         renderProjects();
         renderTasks();
+        if (AppState.currentView === 'timeline') renderTimeline();
     } catch (e) {
         showToast(e.message || '保存失败', 'error');
     } finally {

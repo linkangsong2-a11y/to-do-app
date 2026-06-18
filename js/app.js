@@ -46,11 +46,6 @@ function initApp() {
         document.getElementById('clearCompletedBtn').addEventListener('click', clearCompletedTasks);
         document.getElementById('emptyTrashBtn').addEventListener('click', emptyTrash);
 
-        // Timeline nav
-        document.getElementById('timelinePrevBtn').addEventListener('click', timelinePrev);
-        document.getElementById('timelineNextBtn').addEventListener('click', timelineNext);
-        document.getElementById('timelineTodayBtn').addEventListener('click', timelineToday);
-
         // Color swatches in project modal
         document.querySelectorAll('#colorPicker .color-swatch').forEach(sw => {
             sw.addEventListener('click', () => {
@@ -92,6 +87,24 @@ function initApp() {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) modal.style.display = 'none';
             });
+        });
+
+        // 时间轴搜索输入 (input事件
+        document.addEventListener('input', (e) => {
+            if (e.target && e.target.id === 'tlSearchInput') {
+                AppState.timelineSearch = e.target.value;
+                renderTimeline();
+                return;
+            }
+        });
+
+        // 时间轴状态筛选 change事件
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.id === 'tlStatusFilter') {
+                AppState.timelineStatusFilter = e.target.value;
+                renderTimeline();
+                return;
+            }
         });
 
         // Global click delegation (task completion, delete, edit, etc.)
@@ -157,19 +170,81 @@ function initApp() {
                 return;
             }
 
-            const timelineProjectHeader = e.target.closest('[data-toggle-project]');
-            if (timelineProjectHeader) {
+            // 时间轴项目折叠/展开
+            const tlProjectHeader = e.target.closest('[data-toggle-tl-project]');
+            if (tlProjectHeader) {
                 e.stopPropagation();
-                const id = timelineProjectHeader.dataset.toggleProject;
+                const id = tlProjectHeader.dataset.toggleTlProject;
                 AppState.collapsedProjects[id] = !AppState.collapsedProjects[id];
                 renderTimeline();
                 return;
             }
 
-            const timelineFilter = e.target.closest('[data-timeline-filter]');
-            if (timelineFilter) {
+            // 时间轴项目筛选（侧边栏）
+            const tlProjectFilter = e.target.closest('[data-tl-project-filter]');
+            if (tlProjectFilter) {
                 e.stopPropagation();
-                AppState.timelineProjectFilter = timelineFilter.dataset.timelineFilter;
+                AppState.timelineProjectFilter = tlProjectFilter.dataset.tlProjectFilter;
+                renderTimeline();
+                return;
+            }
+
+            // 时间轴点击空白日期格子创建任务
+            const tlCreate = e.target.closest('[data-create-task]');
+            if (tlCreate) {
+                e.stopPropagation();
+                const dateStr = tlCreate.dataset.createTask;
+                const projectId = tlCreate.dataset.projectId || '';
+                AppState.currentProjectFilter = projectId;
+                openCreateTaskModal(dateStr);
+                return;
+            }
+
+            // 时间轴点击任务块 - 编辑任务
+            const tlTaskBlock = e.target.closest('[data-drag-task]');
+            if (tlTaskBlock) {
+                e.stopPropagation();
+                openEditTaskModal(tlTaskBlock.dataset.dragTask);
+                return;
+            }
+
+            // 时间轴前一周/月
+            const tlPrev = e.target.closest('#tlPrevBtn');
+            if (tlPrev) {
+                e.stopPropagation();
+                timelinePrev();
+                return;
+            }
+
+            // 时间轴后一周/月
+            const tlNext = e.target.closest('#tlNextBtn');
+            if (tlNext) {
+                e.stopPropagation();
+                timelineNext();
+                return;
+            }
+
+            // 时间轴回到今天
+            const tlToday = e.target.closest('#tlTodayBtn');
+            if (tlToday) {
+                e.stopPropagation();
+                timelineToday();
+                return;
+            }
+
+            // 时间轴新建任务按钮
+            const tlNewTask = e.target.closest('#tlNewTaskBtn');
+            if (tlNewTask) {
+                e.stopPropagation();
+                openCreateTaskModal();
+                return;
+            }
+
+            // 时间轴视图切换
+            const tlView = e.target.closest('[data-tl-view]');
+            if (tlView) {
+                e.stopPropagation();
+                AppState.timelineView = tlView.dataset.tlView;
                 renderTimeline();
                 return;
             }

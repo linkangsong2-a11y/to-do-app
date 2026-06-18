@@ -117,5 +117,14 @@ const AppState = {
     dayWidth: 100,
     editingTaskId: null,
     editingProjectId: null,
-    timelineProjectFilter: ''
+    timelineProjectFilter: '',
+    // 时间轴专用状态
+    timelineView: 'week',  // 'week' | 'month'
+    timelineSearch: '',
+    timelineStatusFilter: '',  // '' | 'pending' | 'in_progress' | 'completed'
+    timelineAssigneeFilter: '',
+    draggingTaskId: null,
+    dragStartX: 0,
+    dragStartDate: null,
+    contextMenuTaskId: null
 };
